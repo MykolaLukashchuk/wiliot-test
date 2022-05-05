@@ -8,7 +8,7 @@ import akka.cluster.sharding.typed.scaladsl.{ClusterSharding, Entity, EntityType
 import akka.persistence.typed.PersistenceId
 import akka.persistence.typed.scaladsl.{Effect, EventSourcedBehavior}
 import domain.AssetObject.DeviceId
-import domain.DeviceObject.Payload
+import domain.DeviceObject.{Payload, Timestamp}
 import domain._
 import repo.AssetRepository
 import service.PublishService
@@ -30,7 +30,7 @@ object AssetActor {
   def entityId(assetId: String): String = s"Asset_$assetId"
 
   sealed trait Command
-  case class DeviceMsgs(deviceId: DeviceId, values: Seq[Payload], replyTo: ActorRef[Reply])
+  case class DeviceMsgs(deviceId: DeviceId, values: Seq[(Timestamp, Payload)], replyTo: ActorRef[Reply])
       extends Command
   case class UpdateMetadata(metadata: Metadata) extends Command
   case object AssetDelete                       extends Command
@@ -98,14 +98,19 @@ class AssetActor(assetId: String)(implicit
         }
     }
 
-  private def toAssetEvent(state: State, values: Seq[Payload]): AssetEvent = {
+  private def toAssetEvent(state: State, values: Seq[(Timestamp, Payload)]): AssetEvent = {
     val assetObject = state.assetObject
-    val result: Float = (assetObject.metadata match {
-      case Avg => values.sum / values.size
-      case Max => values.min
-      case Min => values.max
-    }) * state.n * 10
-    AssetEvent(assetObject.id, result, System.currentTimeMillis().toInt)
+    val dirtyResult: (Timestamp, Float) = assetObject.metadata match {
+      case Avg =>
+        val v: Float = values.map(_._2).sum / values.size.toFloat
+        val timestamp: Timestamp = values.map(_._1).max
+        timestamp -> v
+      case Max => values.foldLeft[(Timestamp, Float)](0 -> 0)((r, v) => if (v._2 > r._2) v._1 -> v._2 else r)
+      case Min => values.foldLeft[(Timestamp, Float)](0 -> 0)((r, v) => if (v._2 < r._2) v._1 -> v._2 else r)
+    }
+    val result: (Timestamp, Float) = dirtyResult._1 -> dirtyResult._2 * 10 * state.n
+
+    AssetEvent(assetObject.id, result._2 , result._1)
   }
 
   private def handleEvent(state: State, event: Event, ctx: ActorContext[_]): State = {

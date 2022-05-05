@@ -3,10 +3,10 @@ import akka.actor.typed.ActorSystem
 import akka.cluster.sharding.typed.scaladsl.ClusterSharding
 import akka.util.Timeout
 import domain.DeviceObject
-import domain.DeviceObject.Payload
+import domain.DeviceObject.{Payload, Timestamp}
 import org.apache.kafka.common.serialization.Serdes
-import org.apache.kafka.streams.kstream.{Consumed, TimeWindows}
 import org.apache.kafka.streams.{KeyValue, StreamsBuilder}
+import org.apache.kafka.streams.kstream.{Consumed, TimeWindows}
 
 import java.time.Duration
 import java.util.concurrent.TimeUnit
@@ -26,9 +26,9 @@ object KafkaStreamsTopology {
       .map((_, v) => KeyValue.pair(v.deviceId, v))
       .groupByKey()
       .windowedBy(TimeWindows.ofSizeWithNoGrace(Duration.of(5, java.time.temporal.ChronoUnit.MINUTES)))
-      .aggregate[Seq[Payload]](
+      .aggregate[Seq[(Timestamp, Payload)]](
         () => Seq(),
-        (_, newValue, aggValue) => aggValue :+ newValue.payload
+        (_, newValue, aggValue) => aggValue :+ (newValue.timestamp -> newValue.payload)
       ).toStream
       .foreach((key, v) => {
         val deviceId = key.key().toInt

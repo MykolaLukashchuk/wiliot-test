@@ -6,7 +6,7 @@ import akka.actor.typed.{ActorRef, ActorSystem, Behavior}
 import akka.cluster.sharding.typed.scaladsl.{ClusterSharding, Entity, EntityTypeKey}
 import akka.util.Timeout
 import domain.AssetObject.DeviceId
-import domain.DeviceObject.Payload
+import domain.DeviceObject.{Payload, Timestamp}
 import domain.{AssetObject, Min, Reply}
 import repo.AssetService
 
@@ -21,7 +21,7 @@ object BindingActor {
   private implicit val timeout: Timeout = Timeout(10, TimeUnit.SECONDS)
 
   sealed trait Msg
-  case class DeviceMsgs(deviceId: DeviceId, values: Seq[Payload], replyTo: ActorRef[Reply]) extends Msg
+  case class DeviceMsgs(deviceId: DeviceId, values: Seq[(Timestamp, Payload)], replyTo: ActorRef[Reply]) extends Msg
 
   def initShard(implicit assetService: AssetService, system: ActorSystem[_]) = {
     ClusterSharding(system).init(Entity(TypeKey) { entityContext =>

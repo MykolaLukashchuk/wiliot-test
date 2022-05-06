@@ -28,7 +28,8 @@ object AssetActor {
       AssetActor(entityContext.entityId)
     })
 
-  def entityId(assetId: AssetId): String = s"Asset_$assetId"
+  def entityId(assetId: String): String = s"Asset_$assetId"
+  def entityId(assetId: AssetId): String = entityId(assetId.toString)
 
   sealed trait Command
   case class DeviceMsgs(deviceId: DeviceId, values: Seq[(Timestamp, Payload)], replyTo: ActorRef[Reply])

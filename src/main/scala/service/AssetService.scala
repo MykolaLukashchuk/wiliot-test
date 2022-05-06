@@ -1,4 +1,4 @@
-package repo
+package service
 
 import actors.AssetActor
 import akka.actor.typed.ActorSystem
@@ -6,6 +6,7 @@ import akka.cluster.sharding.typed.scaladsl.ClusterSharding
 import domain.AssetEvent.AssetId
 import domain.AssetObject.DeviceId
 import domain.{AssetObject, Metadata}
+import repo.AssetRepository
 
 trait AssetService {
   def create(assetObject: AssetObject): AssetObject

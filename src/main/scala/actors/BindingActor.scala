@@ -8,7 +8,7 @@ import akka.util.Timeout
 import domain.AssetObject.DeviceId
 import domain.DeviceObject.{Payload, Timestamp}
 import domain.{AssetObject, Min, Reply}
-import repo.AssetService
+import service.AssetService
 
 import java.util.concurrent.TimeUnit
 

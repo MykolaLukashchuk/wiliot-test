@@ -3,8 +3,8 @@ import akka.actor.typed.Behavior
 import akka.actor.typed.scaladsl.Behaviors
 import akka.util.Timeout
 import org.apache.kafka.streams.KafkaStreams
-import repo.{AssetRepository, AssetService}
-import service.PublishService
+import repo.AssetRepository
+import service.{AssetService, PublishService}
 
 import java.util.Properties
 import java.util.concurrent.TimeUnit

@@ -2,6 +2,7 @@ import actors.BindingActor
 import akka.actor.typed.ActorSystem
 import akka.cluster.sharding.typed.scaladsl.ClusterSharding
 import akka.util.Timeout
+import domain.AssetObject.DeviceId
 import domain.DeviceObject
 import domain.DeviceObject.{Payload, Timestamp}
 import org.apache.kafka.common.serialization.Serdes
@@ -31,7 +32,7 @@ object KafkaStreamsTopology {
         (_, newValue, aggValue) => aggValue :+ (newValue.timestamp -> newValue.payload)
       ).toStream
       .foreach((key, v) => {
-        val deviceId = key.key().toInt
+        val deviceId: DeviceId = key.key().toInt
         val target = sharding.entityRefFor(BindingActor.TypeKey, BindingActor.entityId(deviceId))
         val f = target ? (replyTo => BindingActor.DeviceMsgs(deviceId, v, replyTo))
         Try(Await.result(f, timeout.duration)) match {

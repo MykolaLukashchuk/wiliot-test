@@ -26,13 +26,13 @@ object AssetService {
       def metadataUpdate(id: AssetId, metadata: Metadata): Unit =
         sharding.entityRefFor(
           AssetActor.TypeKey,
-          AssetActor.entityId(id.toString)
+          AssetActor.entityId(id)
         ) ! AssetActor.UpdateMetadata(metadata)
 
       def delete(id: AssetId): Unit =
         sharding.entityRefFor(
           AssetActor.TypeKey,
-          AssetActor.entityId(id.toString)
+          AssetActor.entityId(id)
         ) ! AssetActor.AssetDelete
 
       def getAssetIdByDeviceId(deviceId: DeviceId): Option[AssetId] =

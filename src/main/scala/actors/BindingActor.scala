@@ -48,7 +48,7 @@ class BindingActor(ctx: ActorContext[Msg])(implicit assetService: AssetService) 
 
     Behaviors.receiveMessage[Msg] {
       case DeviceMsgs(deviceId, values, replyTo) =>
-        val target = sharding.entityRefFor(AssetActor.TypeKey, assetId.toString)
+        val target = sharding.entityRefFor(AssetActor.TypeKey, AssetActor.entityId(assetId))
         target ! AssetActor.DeviceMsgs(deviceId, values, replyTo)
         Behaviors.same
     }

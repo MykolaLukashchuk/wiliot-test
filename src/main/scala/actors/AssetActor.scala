@@ -7,6 +7,7 @@ import akka.actor.typed.{ActorRef, ActorSystem, Behavior}
 import akka.cluster.sharding.typed.scaladsl.{ClusterSharding, Entity, EntityTypeKey}
 import akka.persistence.typed.PersistenceId
 import akka.persistence.typed.scaladsl.{Effect, EventSourcedBehavior}
+import domain.AssetEvent.AssetId
 import domain.AssetObject.DeviceId
 import domain.DeviceObject.{Payload, Timestamp}
 import domain._
@@ -27,7 +28,7 @@ object AssetActor {
       AssetActor(entityContext.entityId)
     })
 
-  def entityId(assetId: String): String = s"Asset_$assetId"
+  def entityId(assetId: AssetId): String = s"Asset_$assetId"
 
   sealed trait Command
   case class DeviceMsgs(deviceId: DeviceId, values: Seq[(Timestamp, Payload)], replyTo: ActorRef[Reply])
